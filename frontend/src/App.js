@@ -45,7 +45,6 @@ import './App.css';
 
 const API_URL = 'http://localhost:5069';
 
-// Define character ranks based on score ranges
 const RANK_DEFINITIONS = [
   { min: 0, max: 20, rank: "Rookie", title: "Just starting the journey", icon: "👶" },
   { min: 21, max: 40, rank: "Sidekick", title: "Learning the ropes", icon: "🧒" },
@@ -54,10 +53,9 @@ const RANK_DEFINITIONS = [
   { min: 81, max: 100, rank: "Legend", title: "The stuff of legends", icon: "🔱" }
 ];
 
-// Function to get rank based on score
 const getRankFromScore = (score) => {
   const rank = RANK_DEFINITIONS.find(r => score >= r.min && score <= r.max);
-  return rank || RANK_DEFINITIONS[0]; // Default to lowest rank if no match
+  return rank || RANK_DEFINITIONS[0]; 
 };
 
 const App = () => {
@@ -136,7 +134,7 @@ const ProfileReviewer = () => {
     setError('');
     setProfileData(null);
     setAnalysis(null);
-    
+
     try {
       const response = await fetch(`${API_URL}/api/profile-review`, {
         method: 'POST',
@@ -159,7 +157,6 @@ const ProfileReviewer = () => {
     }
   };
 
-  // Get rank information if analysis is available
   const rankInfo = analysis ? getRankFromScore(analysis.overallScore) : null;
   
   return (
@@ -653,22 +650,22 @@ const RepoVisualizer = () => {
     }
   };
 
-  // Convert languages object to array for charts
+  
   const languagesArray = Object.entries(languages).map(([name, value]) => ({
     name,
     value
   }));
 
-  // Colors for the pie chart
+
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-  // Format date string
+
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Calculate repository age in days
+
   const calculateRepoAge = (createdAt) => {
     const created = new Date(createdAt);
     const today = new Date();
