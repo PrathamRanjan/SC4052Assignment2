@@ -10,7 +10,7 @@
 [![GitHub Assistant Demo](https://img.youtube.com/vi/HNmeVOGMuns/0.jpg)](https://youtu.be/HNmeVOGMuns)
 
 ## 📝 Abstract
-GitHub Assistant is a comprehensive tool that leverages the GitHub API and AI capabilities to provide profile analysis, README generation, and repository visualization. The project demonstrates integration between a React frontend and Python Flask backend, utilizing the Groq API for generating insights through large language models.
+GitHub Assistant is a comprehensive tool that leverages the GitHub API and AI capabilities to provide profile analysis, README generation. The project demonstrates integration between a React frontend and Python Flask backend, utilizing the Groq API for generating insights through large language models.
 
 ## 🔍 Features
 
@@ -30,28 +30,13 @@ GitHub Assistant is a comprehensive tool that leverages the GitHub API and AI ca
   - Project structure explanation
   - Repository metadata integration
 
-### 3. Repository Visualizer
-- **Description**: Creates interactive visualizations of repository data
-- **Key Components**:
-  - Language distribution charts
-  - Commit activity timeline
-  - Contributor analytics
-  - Issue tracking visualization
-
-## 🛠️ Technology Stack
-- **Frontend**: React.js with custom utility-class styling
-- **Backend**: Python Flask RESTful API
-- **External APIs**: 
-  - GitHub REST API for repository data
-  - Groq API for natural language processing
-
 ## 📋 Installation
 
 ### Prerequisites
-- Node.js (v14+)
 - Python (v3.8+)
 - GitHub Personal Access Token
 - Groq API Key
+- React
 
 ### Frontend Setup
 ```bash
