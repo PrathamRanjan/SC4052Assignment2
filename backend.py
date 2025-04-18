@@ -6,16 +6,15 @@ import os
 import base64
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
 # API Keys
+GROQ_API_KEY = ''
+GITHUB_TOKEN = ''
 
-
-# GitHub API headers
 github_headers = {
     'Authorization': f'token {GITHUB_TOKEN}',
     'Accept': 'application/vnd.github.v3+json'
@@ -30,22 +29,18 @@ def profile_review():
         if not username:
             return jsonify({'error': 'GitHub username is required'}), 400
         
-        # Get user data
         user_response = requests.get(f'https://api.github.com/users/{username}', headers=github_headers)
         user_response.raise_for_status()
         user_data = user_response.json()
         
-        # Get repositories
         repos_response = requests.get(f'https://api.github.com/users/{username}/repos?per_page=100&sort=updated', headers=github_headers)
         repos_response.raise_for_status()
         repos_data = repos_response.json()
         
-        # Get events
         events_response = requests.get(f'https://api.github.com/users/{username}/events?per_page=100', headers=github_headers)
         events_response.raise_for_status()
         events_data = events_response.json()
         
-        # Calculate language statistics
         language_stats = {}
         stars_count = sum(repo['stargazers_count'] for repo in repos_data)
         
@@ -54,7 +49,6 @@ def profile_review():
             if language:
                 language_stats[language] = language_stats.get(language, 0) + 1
         
-        # Prepare profile data
         profile_data = {
             'basicInfo': {
                 'name': user_data.get('name'),
@@ -92,7 +86,6 @@ def profile_review():
             }
         }
         
-        # Generate analysis with Groq
         prompt = f"""
 You are a GitHub profile reviewer. Analyze this GitHub profile data and provide a comprehensive review with a rating out of 100.
 Focus on these criteria:
@@ -130,7 +123,6 @@ Provide your assessment as a JSON object with these fields:
         groq_response.raise_for_status()
         analysis_text = groq_response.json()['choices'][0]['message']['content']
         
-        # Extract JSON from the response
         import re
         json_match = re.search(r'{[\s\S]*}', analysis_text)
         if not json_match:
@@ -159,7 +151,6 @@ def readme_generator():
         if not repo_owner or not repo_name:
             return jsonify({'error': 'Repository owner and name are required'}), 400
         
-        # Get repository data
         repo_response = requests.get(
             f'https://api.github.com/repos/{repo_owner}/{repo_name}',
             headers=github_headers
@@ -167,21 +158,17 @@ def readme_generator():
         repo_response.raise_for_status()
         repo_data = repo_response.json()
         
-        # Get file tree
         contents_response = requests.get(
             f'https://api.github.com/repos/{repo_owner}/{repo_name}/git/trees/{branch}?recursive=1',
             headers=github_headers
         )
         contents_response.raise_for_status()
         
-        # Extract file list
         files_list = [item['path'] for item in contents_response.json()['tree'] if item['type'] == 'blob']
         
-        # Filter code files
         code_extensions = ['js', 'jsx', 'ts', 'tsx', 'py', 'java', 'c', 'cpp', 'cs', 'go', 'rs', 'rb', 'php']
         code_files = [file for file in files_list if file.split('.')[-1].lower() in code_extensions][:10]
         
-        # Get content of code files
         file_contents = []
         for file in code_files:
             try:
@@ -192,13 +179,11 @@ def readme_generator():
                 content_response.raise_for_status()
                 content_data = content_response.json()
                 
-                # Decode content from base64
                 content = base64.b64decode(content_data['content']).decode('utf-8')
                 file_contents.append({'path': file, 'content': content})
             except Exception as e:
                 file_contents.append({'path': file, 'content': '// Content could not be retrieved'})
         
-        # Generate README with Groq
         files_content_text = '\n\n'.join([
             f"File: {file['path']}\n```\n{file['content'][:5000] + '...' if len(file['content']) > 5000 else file['content']}\n```"
             for file in file_contents
@@ -268,7 +253,6 @@ def repo_visualizer():
         if not repo_owner or not repo_name:
             return jsonify({'error': 'Repository owner and name are required'}), 400
         
-        # Get repository data
         repo_response = requests.get(
             f'https://api.github.com/repos/{repo_owner}/{repo_name}',
             headers=github_headers
@@ -276,7 +260,6 @@ def repo_visualizer():
         repo_response.raise_for_status()
         repo_data = repo_response.json()
         
-        # Get contributors
         contributors_response = requests.get(
             f'https://api.github.com/repos/{repo_owner}/{repo_name}/contributors?per_page=10',
             headers=github_headers
@@ -284,7 +267,6 @@ def repo_visualizer():
         contributors_response.raise_for_status()
         contributors_data = contributors_response.json()
         
-        # Get commit activity
         commit_activity_response = requests.get(
             f'https://api.github.com/repos/{repo_owner}/{repo_name}/stats/commit_activity',
             headers=github_headers
@@ -292,7 +274,6 @@ def repo_visualizer():
         commit_activity_response.raise_for_status()
         commit_activity_data = commit_activity_response.json()
         
-        # Get language breakdown
         languages_response = requests.get(
             f'https://api.github.com/repos/{repo_owner}/{repo_name}/languages',
             headers=github_headers
@@ -300,7 +281,6 @@ def repo_visualizer():
         languages_response.raise_for_status()
         languages_data = languages_response.json()
         
-        # Get issues
         issues_response = requests.get(
             f'https://api.github.com/repos/{repo_owner}/{repo_name}/issues?state=all&per_page=100',
             headers=github_headers
@@ -308,7 +288,6 @@ def repo_visualizer():
         issues_response.raise_for_status()
         issues_data = issues_response.json()
         
-        # Process commit activity data
         commit_activity = []
         if commit_activity_data:
             commit_activity = [
@@ -316,14 +295,12 @@ def repo_visualizer():
                 for i, week in enumerate(commit_activity_data[-12:])
             ]
         
-        # Process language data
         total_bytes = sum(languages_data.values())
         languages = {}
         
         for language, bytes_count in languages_data.items():
             languages[language] = round((bytes_count / total_bytes) * 100, 2)
         
-        # Process issues data
         open_issues = sum(1 for issue in issues_data if issue['state'] == 'open')
         closed_issues = sum(1 for issue in issues_data if issue['state'] == 'closed')
         
